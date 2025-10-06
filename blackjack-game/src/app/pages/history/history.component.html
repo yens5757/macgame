@@ -1,0 +1,71 @@
+<div class="history-container">
+  <div class="header">
+    <h1>Game History</h1>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-light" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <div *ngIf="!loading">
+    <div class="stats-grid" *ngIf="userStats">
+      <div class="stat-card">
+        <div class="stat-label">Total Games</div>
+        <div class="stat-value">{{ userStats.total_games }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Wins</div>
+        <div class="stat-value text-success">{{ userStats.total_wins }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Losses</div>
+        <div class="stat-value text-danger">{{ userStats.total_losses }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pushes</div>
+        <div class="stat-value text-warning">{{ userStats.total_pushes }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Win Rate</div>
+        <div class="stat-value">{{ getWinRate().toFixed(1) }}%</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Current Balance</div>
+        <div class="stat-value">{{ userStats.chip_balance }}</div>
+      </div>
+    </div>
+
+    <div class="table-container mt-4">
+      <h2 class="mb-3">Recent Games</h2>
+      <div class="table-responsive">
+        <table class="table table-dark table-striped table-hover">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Bet</th>
+              <th>Player</th>
+              <th>Dealer</th>
+              <th>Result</th>
+              <th>Payout</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let game of gameHistory" [ngClass]="getResultClass(game.result)">
+              <td>{{ formatDate(game.created_at!) }}</td>
+              <td>{{ game.bet_amount }}</td>
+              <td>{{ game.player_total }}</td>
+              <td>{{ game.dealer_total }}</td>
+              <td class="text-capitalize">{{ game.result }}</td>
+              <td>{{ game.payout }}</td>
+            </tr>
+            <tr *ngIf="gameHistory.length === 0">
+              <td colspan="6" class="text-center">No games played yet</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,123 @@
+<!-- Game View -->
+<div *ngIf="!showHistory" class="game-container">
+  <!-- Header with chips -->
+  <div class="header">
+    <div class="logo">
+      <h1>Blackjack</h1>
+    </div>
+    <div class="chips-display">
+      <span class="chip-icon">🪙</span>
+      <span class="chip-amount">{{ gameState.chips }}</span>
+      <button class="btn btn-sm btn-outline-light ms-2" (click)="addChips()">+</button>
+    </div>
+    <div class="nav-links">
+      <button class="btn btn-outline-light me-3" (click)="toggleHistory()">History</button>
+      <button class="btn btn-sm btn-outline-light">🌙</button>
+    </div>
+  </div>
+
+  <!-- Game Board -->
+  <div class="game-board">
+    <!-- Dealer Section -->
+    <div class="dealer-section">
+      <div class="hand-label">
+        <span class="badge bg-secondary">{{ getDealerTotal() }} Dealer</span>
+      </div>
+      <div class="cards-container">
+        <app-card 
+          *ngFor="let card of gameState.dealerHand" 
+          [card]="card">
+        </app-card>
+        <app-card 
+          *ngIf="gameState.phase === 'playing'" 
+          [faceDown]="true">
+        </app-card>
+      </div>
+    </div>
+
+    <!-- Message Display -->
+    <div class="message-display">
+      <h3 [class.text-success]="gameState.result === 'win'"
+          [class.text-danger]="gameState.result === 'lose'"
+          [class.text-warning]="gameState.result === 'push'">
+        {{ gameState.message }}
+      </h3>
+    </div>
+
+    <!-- Player Section -->
+    <div class="player-section">
+      <div class="cards-container">
+        <app-card 
+          *ngFor="let card of gameState.playerHand" 
+          [card]="card">
+        </app-card>
+      </div>
+      <div class="hand-label">
+        <span class="badge bg-primary">{{ getPlayerTotal() }} You</span>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-section">
+      <div *ngIf="gameState.phase === 'betting'" class="betting-panel">
+        <div class="bet-amount-selector mb-3">
+          <button 
+            *ngFor="let amount of [10, 25, 50, 100]"
+            class="btn btn-outline-warning me-2"
+            [class.active]="betAmount === amount"
+            (click)="setBetAmount(amount)">
+            {{ amount }}
+          </button>
+        </div>
+        <div class="input-group mb-3">
+          <span class="input-group-text">Bet Amount</span>
+          <input 
+            type="number" 
+            class="form-control" 
+            [(ngModel)]="betAmount"
+            [max]="gameState.chips"
+            min="1">
+        </div>
+        <button 
+          class="btn btn-success btn-lg w-100"
+          [disabled]="betAmount > gameState.chips || betAmount <= 0"
+          (click)="placeBet()">
+          Deal Cards
+        </button>
+      </div>
+
+      <div *ngIf="gameState.phase === 'playing'" class="action-buttons">
+        <button class="btn btn-light btn-lg" (click)="hit()">Hit</button>
+        <button class="btn btn-outline-light btn-lg" (click)="getAiAdvice()" style="border: 2px solid white;">?</button>
+        <button class="btn btn-light btn-lg" (click)="stand()">Stand</button>
+      </div>
+
+      <div *ngIf="gameState.phase === 'dealer-turn'" class="dealer-playing">
+        <div class="spinner-border text-light" role="status">
+          <span class="visually-hidden">Dealer playing...</span>
+        </div>
+        <p class="text-white mt-2">Dealer is playing...</p>
+      </div>
+
+      <div *ngIf="gameState.phase === 'game-over'" class="game-over">
+        <button class="btn btn-primary btn-lg" (click)="newGame()">Play Again</button>
+      </div>
+    </div>
+  </div>
+  <!-- AI Advice Modal -->
+  <div *ngIf="showAiAdvice" class="ai-modal-backdrop" (click)="closeAiAdvice()">
+    <div class="ai-modal" (click)="$event.stopPropagation()">
+      <h3>AI Assistant</h3>
+      <p>{{ aiAdvice }}</p>
+      <button class="btn btn-primary" (click)="closeAiAdvice()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- History View -->
+<div *ngIf="showHistory" style="background: #0a0a0a; min-height: 100vh;">
+  <div style="padding: 20px;">
+    <button class="btn btn-outline-light" (click)="toggleHistory()">← Back to Game</button>
+  </div>
+  <app-history></app-history>
+</div>
