@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build && node replace-env.js",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:blackjack-game": "node dist/blackjack-game/server/server.mjs"
