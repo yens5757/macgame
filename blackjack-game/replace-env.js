@@ -1,33 +1,51 @@
 const fs = require('fs');
 const path = require('path');
 
-// Adjust this path based on your Angular version's output structure
-// For Angular 20, it's typically: dist/blackjack-game/browser
 const distPath = path.join(__dirname, 'dist/blackjack-game/browser');
 
 function replaceInFile(filePath) {
   let content = fs.readFileSync(filePath, 'utf8');
+  let modified = false;
   
-  content = content.replace(/\$\{NG_APP_SUPABASE_URL\}/g, process.env.NG_APP_SUPABASE_URL || '');
-  content = content.replace(/\$\{NG_APP_SUPABASE_KEY\}/g, process.env.NG_APP_SUPABASE_KEY || '');
-  content = content.replace(/\$\{NG_APP_GEMINI_API_KEY\}/g, process.env.NG_APP_GEMINI_API_KEY || '');
+  const replacements = {
+    '${NG_APP_SUPABASE_URL}': process.env.NG_APP_SUPABASE_URL || '',
+    '${NG_APP_SUPABASE_KEY}': process.env.NG_APP_SUPABASE_KEY || '',
+    '${NG_APP_GEMINI_API_KEY}': process.env.NG_APP_GEMINI_API_KEY || ''
+  };
   
-  fs.writeFileSync(filePath, content);
+  for (const [placeholder, value] of Object.entries(replacements)) {
+    if (content.includes(placeholder)) {
+      content = content.replaceAll(placeholder, value);
+      modified = true;
+    }
+  }
+  
+  if (modified) {
+    fs.writeFileSync(filePath, content);
+    console.log(`✓ Replaced variables in ${path.basename(filePath)}`);
+  }
 }
 
-// Check if dist directory exists
+function walkDirectory(dir) {
+  const files = fs.readdirSync(dir);
+  
+  files.forEach(file => {
+    const filePath = path.join(dir, file);
+    const stat = fs.statSync(filePath);
+    
+    if (stat.isDirectory()) {
+      walkDirectory(filePath);
+    } else if (file.endsWith('.js') || file.endsWith('.mjs')) {
+      replaceInFile(filePath);
+    }
+  });
+}
+
 if (!fs.existsSync(distPath)) {
   console.error(`Error: ${distPath} does not exist`);
   process.exit(1);
 }
 
-// Find and replace in all JS files
-const files = fs.readdirSync(distPath);
-files.forEach(file => {
-  if (file.endsWith('.js')) {
-    console.log(`Processing ${file}...`);
-    replaceInFile(path.join(distPath, file));
-  }
-});
-
-console.log('Environment variables replaced successfully!');
+console.log('Replacing environment variables...');
+walkDirectory(distPath);
+console.log('Done!');
